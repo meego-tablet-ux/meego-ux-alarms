@@ -1,0 +1,14 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.meego.alarms">
+    <method name="incomingCall">
+      <arg name="summary" type="s" direction="in"/>
+      <arg name="body" type="s" direction="in"/>
+      <arg name="acceptAction" type="s" direction="in"/>
+      <arg name="rejectAction" type="s" direction="in"/>
+      <arg name="sound" type="s" direction="in"/>
+      <arg name="imageURI" type="s" direction="in"/>
+    </method>
+    <method name="dropCall"/>
+  </interface>
+</node>

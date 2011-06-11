@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import sys
+import dbus
+
+bus = dbus.SessionBus()
+
+control = dbus.Interface(bus.get_object('org.meego.alarms', 
+					'/incomingCall'),
+					'org.meego.alarms')
+
+control.dropCall()

@@ -1,0 +1,14 @@
+The meego-ux-alarms daemon is responsible for displaying hard notifications and playing
+associated audio, where a hard notification take over the user experience and forces the
+user to respond.
+
+There are four types of events supported:
+
+* incoming call
+* tasks reminder
+* calendar event reminder
+* alarm clock alarms
+
+Incoming call request come directly from meego-ux-daemon and take priority over all other events.
+All other notification events directly come from EDS via the libealarm library.
+
