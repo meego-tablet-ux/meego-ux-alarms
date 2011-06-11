@@ -6,7 +6,7 @@ MOBILITY += sensors multimedia
 PKGCONFIG += \
     gconf-2.0 \
     mlite
-LIBS = -lealarm
+#LIBS = -lealarm
 TARGET = meego-ux-alarms
 TEMPLATE = app
 SOURCES += main.cpp \
