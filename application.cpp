@@ -55,7 +55,7 @@ Application::Application(int & argc, char ** argv) :
     m_translator.load("qt_meego-ux-alarms.qm", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     installTranslator(&m_translator);
 
-    m_secondaryRingerItem = new MGConfItem("/meego/ux/SecondaryRinger", this);
+    m_secondaryRingerItem = new MGConfItem("/meego/chat/short-videocall-sound", this);
     connect(m_secondaryRingerItem, SIGNAL(valueChanged()), SLOT(updateSecondaryRinger()));
     updateSecondaryRinger();
 
