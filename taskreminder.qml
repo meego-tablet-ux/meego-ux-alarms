@@ -12,7 +12,7 @@ Window {
 
         //: Button text to make the task reminder dialog go away
         //: without opening the task application
-        cancelButtonText: qsTr("Ok")
+        cancelButtonText: qsTr("OK")
 
         //: Button text to make the task reminder dialog open the
         //: task application viewing the task in question

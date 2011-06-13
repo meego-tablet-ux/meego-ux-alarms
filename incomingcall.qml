@@ -16,13 +16,26 @@ Window {
         //: Answer the incoming VOIP call
         acceptButtonText: qsTr("Accept")
 
-        content: Text {
-            anchors.centerIn: parent
+        content: Row{
             width: parent.width - 20
-            wrapMode: Text.Wrap
-            text: currentRequest.body
+            height: childrenRect.height
+            spacing: 20
+            anchors.centerIn: parent
+
+            Image {
+                source: currentRequest.imageURI
+                height: 70
+                width: 70
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.Wrap
+                text: currentRequest.body
+            }
         }
-        onAccepted: {
+        
+	onAccepted: {
             qApp.triggerAction(currentRequest.acceptAction);
             Qt.quit();
         }

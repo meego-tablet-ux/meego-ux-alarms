@@ -12,7 +12,7 @@ Window {
 
         //: Button text to make the event reminder dialog go away
         //: without opening the calendar application
-        cancelButtonText: qsTr("Ok")
+        cancelButtonText: qsTr("OK")
 
         //: Button text to make the event reminder dialog open the
         //: calendar application viewing the event in question

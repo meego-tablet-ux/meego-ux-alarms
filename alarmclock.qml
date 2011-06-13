@@ -11,7 +11,7 @@ Window {
         title: qsTr("Alarm")
 
         //: Button text to make the alarm stop without snoozing
-        cancelButtonText: qsTr("Ok")
+        cancelButtonText: qsTr("OK")
 
         //: Button text to snooze the alarm
         acceptButtonText: qsTr("Snooze")
