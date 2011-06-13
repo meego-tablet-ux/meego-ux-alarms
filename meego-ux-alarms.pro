@@ -36,11 +36,10 @@ desktop.path += $$INSTALL_ROOT/etc/xdg/autostart
 INSTALLS += target share desktop
 
 OTHER_FILES += \
-    alarm.qml \
-    hardnotification.qml \
-    interfaces/alarmcontrol.xml \
+    alarmclock.qml \
+    eventreminder.qml \
     incomingcall.qml \
-    alarmclock.qml
+    taskreminder.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-alarms
