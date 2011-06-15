@@ -16,6 +16,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <MGConfItem>
+#include <mremoteaction.h>
 
 #include "application.h"
 #include "dialog.h"
@@ -66,6 +67,29 @@ Application::Application(int & argc, char ** argv) :
     new AlarmControl(this);
     QDBusConnection::sessionBus().registerService("org.meego.alarms");
     QDBusConnection::sessionBus().registerObject("/incomingCall", this);
+
+    m_alarmResourceSet = new ResourcePolicy::ResourceSet("alarm", this);
+    m_alarmResourceSet->setAlwaysReply();
+
+    m_alarmAudioResource = new ResourcePolicy::AudioResource("alarm");
+    m_alarmAudioResource->setProcessID(QCoreApplication::applicationPid());
+    m_alarmAudioResource->setStreamTag("media.name", "AlarmStream");
+    
+    m_alarmResourceSet->addResourceObject(m_alarmAudioResource);
+
+    connect (m_alarmResourceSet, SIGNAL (resourcesGranted(const QList<ResourcePolicy::ResourceType>&)), this,
+             SLOT(audioAcquiredHandler()));
+
+    connect (m_alarmResourceSet, SIGNAL (lostResources()), this,
+             SLOT (audioLostHandler()));
+
+    connect (m_alarmResourceSet, SIGNAL (resourcesReleased()), this,
+             SLOT (audioReleasedHandler()));
+
+    connect(m_alarmResourceSet,
+            SIGNAL(resourcesDenied()), this,
+            SLOT(audioDeniedHandler()));
+
 }
 
 Application::~Application()
@@ -150,7 +174,7 @@ void Application::incomingCall(QString summary,
             m_secondaryPlayer = new QMediaPlayer(this, QMediaPlayer::LowLatency);
             connect(m_secondaryPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
             m_secondaryPlayer->setMedia(QUrl::fromLocalFile(m_secondaryRinger));
-            m_secondaryPlayer->play();
+            playSound();
         }
     }
 }
@@ -198,7 +222,8 @@ void Application::triggerAction(QString action)
 {
     if (!action.isEmpty())
     {
-        // call it
+        MRemoteAction callAction(action);
+        callAction.trigger();
     }
 }
 
@@ -227,6 +252,18 @@ void Application::cleanupDialog(bool loadNextRequest)
         // for a new dialog.
         m_dialog->close();
     }
+
+    if (!m_currentRequest->getSound().isEmpty() || m_requestQueue.isEmpty())
+    {
+        m_soundsToPlay--;
+        //No more sounds to play, release the resource
+        if (m_soundsToPlay <= 0 || m_requestQueue.isEmpty())
+        {
+            m_alarmResourceSet->release();
+            m_soundsToPlay = 0;
+        }
+    }
+
     if (m_primaryPlayer)
     {
         m_primaryPlayer->stop();
@@ -249,6 +286,9 @@ void Application::cleanupDialog(bool loadNextRequest)
 
 void Application::enqueue(AlarmRequest *request)
 {
+    if (!request->getSound().isEmpty())
+        m_soundsToPlay++;
+
     if (m_currentRequest)
     {
         m_requestQueue << request;
@@ -285,13 +325,64 @@ void Application::showCurrentRequest()
         m_dialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-alarms/incomingcall.qml"));
         break;
     }
-    m_dialog->show();
 
     if (!m_currentRequest->getSound().isEmpty())
     {
         m_primaryPlayer = new QMediaPlayer(this, QMediaPlayer::LowLatency);
         connect(m_primaryPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
         m_primaryPlayer->setMedia(QUrl::fromLocalFile(m_currentRequest->getSound()));
-        m_primaryPlayer->play();
+        playSound();
     }
+
+    m_dialog->show();
+}
+
+void Application::playSound()
+{
+    qDebug() << "meego-ux-alarm acquiring sound through sound policy...";
+
+    if (m_hasAcquiredResources != true)
+        m_alarmResourceSet->acquire();
+    else
+        audioAcquiredHandler();
+}
+
+void Application::audioAcquiredHandler()
+{
+    qDebug() << "meego-ux-alarms audio has been acquired, playing alarm sound.";
+
+    m_hasAcquiredResources = true;
+
+    if (m_primaryPlayer && m_primaryPlayer->state() != QMediaPlayer::PlayingState)
+        m_primaryPlayer->play();
+
+    if (m_secondaryPlayer && m_secondaryPlayer->state() != QMediaPlayer::PlayingState)
+        m_secondaryPlayer->play();
+}
+
+void Application::audioLostHandler()
+{
+    m_hasAcquiredResources = false;
+
+    qDebug() << "meego-ux-alarm audio has been lost, pausing sounds";
+    if (m_primaryPlayer && m_primaryPlayer->state() == QMediaPlayer::PlayingState)
+    {
+        m_primaryPlayer->pause();
+    }
+    if (m_secondaryPlayer && m_secondaryPlayer->state() == QMediaPlayer::PlayingState)
+    {
+        m_secondaryPlayer->pause();
+    }
+}
+
+void Application::audioReleasedHandler()
+{
+    m_hasAcquiredResources = false;
+    qDebug() <<"meego-ux-alarms audio has been successfully released";
+}
+
+void Application::audioDeniedHandler()
+{
+    m_hasAcquiredResources = false;
+    qDebug() <<"meego-ux-alarms audio has been denied!";
 }

@@ -14,6 +14,7 @@
 #include <QTranslator>
 #include <QMediaPlayer>
 #include <QOrientationSensor>
+#include <policy/resource-set.h>
 
 #include "alarmrequest.h"
 
@@ -64,10 +65,15 @@ public slots:
 
 private slots:
     void updateOrientation();
+    void playSound();
     void updateSecondaryRinger();
     void updateIncomingCallPath();
     void mediaStatusChanged(QMediaPlayer::MediaStatus);
     void enqueue(AlarmRequest *);
+    void audioAcquiredHandler();
+    void audioLostHandler();
+    void audioReleasedHandler();
+    void audioDeniedHandler();
 
 private:
     void showCurrentRequest();
@@ -94,6 +100,13 @@ private:
     QList<AlarmRequest *> m_requestQueue;
 
     bool m_activeIncomingCall;
+
+    ResourcePolicy::ResourceSet *m_alarmResourceSet;
+    ResourcePolicy::AudioResource *m_alarmAudioResource;
+    int m_soundsToPlay;
+
+    bool m_hasAcquiredResources;
+
 };
 
 #endif // APPLICATION_H

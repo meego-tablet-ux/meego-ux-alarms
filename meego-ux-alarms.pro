@@ -5,7 +5,9 @@ CONFIG += mobility link_pkgconfig
 MOBILITY += sensors multimedia
 PKGCONFIG += \
     gconf-2.0 \
-    mlite
+    mlite \
+    libresourceqt1
+
 #LIBS = -lealarm
 TARGET = meego-ux-alarms
 TEMPLATE = app
