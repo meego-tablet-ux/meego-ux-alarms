@@ -41,7 +41,8 @@ OTHER_FILES += \
     alarmclock.qml \
     eventreminder.qml \
     incomingcall.qml \
-    taskreminder.qml
+    taskreminder.qml \
+    shutdownverification.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-alarms
