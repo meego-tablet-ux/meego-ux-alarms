@@ -30,7 +30,9 @@ Application::Application(int & argc, char ** argv) :
     m_primaryPlayer(NULL),
     m_secondaryPlayer(NULL),
     m_currentRequest(NULL),
-    m_activeIncomingCall(false)
+    m_activeIncomingCall(false),
+    m_soundsToPlay(0),
+    m_hasAcquiredResources(false)
 {
     setApplicationName("meego-ux-alarms");
 
