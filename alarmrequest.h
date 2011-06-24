@@ -40,9 +40,9 @@ public:
         m_type(alarmType) {}
 
     enum AlarmType {
-        TaskReminder = 0,
+        AlarmClock = 0,
         EventReminder = 1,
-        AlarmClock = 2,
+        TaskReminder = 2,
         IncomingCall = 3
     };
 

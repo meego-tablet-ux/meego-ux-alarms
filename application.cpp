@@ -79,6 +79,15 @@ Application::Application(int & argc, char ** argv) :
     
     m_alarmResourceSet->addResourceObject(m_alarmAudioResource);
 
+    g_type_init();
+
+    m_notifyItem = alarm_notify_new();
+
+    g_signal_connect (m_notifyItem, "alarm", G_CALLBACK (getAlarm_cb), this);
+
+    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QString, int)),
+             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QString, int) ));
+
     connect (m_alarmResourceSet, SIGNAL (resourcesGranted(const QList<ResourcePolicy::ResourceType>&)), this,
              SLOT(audioAcquiredHandler()));
 
@@ -193,7 +202,7 @@ void Application::dropCall()
 {
     qDebug() << "XXX dropCall" << m_dialog;
     if (!m_currentRequest ||
-            m_currentRequest->getType() != AlarmRequest::IncomingCall)
+        m_currentRequest->getType() != AlarmRequest::IncomingCall)
         return;
     cleanupDialog();
 }
@@ -284,6 +293,56 @@ void Application::cleanupDialog(bool loadNextRequest)
 
     if (loadNextRequest && !m_requestQueue.isEmpty())
         enqueue(m_requestQueue.takeFirst());
+}
+
+void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type)
+{    
+    AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type);
+    enqueue(incomingRequest);
+}
+
+//Callback function for getting alarm info from libealarm
+void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Application* appInstance)
+{
+    qDebug() << "meego-ux-alarms has received an event / alarm";
+
+    int type = e_cal_component_get_vtype (data);
+
+    e_cal_component_commit_sequence(data);
+
+    ECalComponentText summaryTxt;
+    ECalComponentDateTime timeDate;
+    GSList* attachList;
+    const gchar *attachment;
+    const gchar* locationTxt;
+
+    e_cal_component_get_summary (data, &summaryTxt);
+
+    //e_cal_component_get_attachment_list(data, &attachList);
+    //g_slist_remove(attachList, attachment);
+
+    e_cal_component_get_dtstart (data, &timeDate);
+
+    QString summary = summaryTxt.value;
+    QString body = summaryTxt.value;
+    QString acceptAction;
+    QString rejectAction;
+    QString imageUri;
+    QString sound;
+
+    if (timeDate.value != NULL)
+    {
+        body += (QString("\n") + QString::number(timeDate.value->month) + QString("/") + QString::number(timeDate.value->day) + 
+	QString("\n") + QString::number(timeDate.value->hour) + QString(":") + QString::number(timeDate.value->minute));
+
+        e_cal_component_get_dtend (data, &timeDate);
+        body += (" - " + QString::number(timeDate.value->hour) + QString(":") + QString::number(timeDate.value->minute) + "\n");
+    }
+
+    e_cal_component_get_location(data, &locationTxt);
+    body += locationTxt;
+
+    appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type);
 }
 
 void Application::enqueue(AlarmRequest *request)

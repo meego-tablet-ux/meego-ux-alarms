@@ -1,4 +1,4 @@
-VERSION = 0.1.1
+VERSION = 0.1.2
 
 QT += declarative opengl network dbus
 CONFIG += mobility link_pkgconfig
@@ -6,7 +6,9 @@ MOBILITY += sensors multimedia
 PKGCONFIG += \
     gconf-2.0 \
     mlite \
-    libresourceqt1
+    libresourceqt1 \
+    libealarm
+    
 
 #LIBS = -lealarm
 TARGET = meego-ux-alarms
