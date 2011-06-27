@@ -21,6 +21,7 @@ class AlarmRequest : public QObject
     Q_PROPERTY(QString imageUri READ getImageUri);
     Q_PROPERTY(QString sound READ getSound);
     Q_PROPERTY(int type READ getType);
+    Q_PROPERTY(QString uid READ getUid);
 public:
     explicit AlarmRequest(const QString summary,
                           const QString body,
@@ -29,6 +30,7 @@ public:
                           const QString imageUri,
                           const QString sound,
                           int alarmType,
+                          const QString uid,
                           QObject *parent = 0) :
         QObject(parent),
         m_summary(summary),
@@ -37,7 +39,8 @@ public:
         m_rejectAction(rejectAction),
         m_imageUri(imageUri),
         m_sound(sound),
-        m_type(alarmType) {}
+        m_type(alarmType),
+        m_uid(uid) {}
 
     enum AlarmType {
         AlarmClock = 0,
@@ -67,6 +70,9 @@ public:
     int getType() {
         return m_type;
     }
+    QString getUid() const {
+        return m_uid;
+    }
 
 private:
     QString m_summary;
@@ -76,6 +82,7 @@ private:
     QString m_imageUri;
     QString m_sound;
     int m_type;
+    QString m_uid;
 };
 
 #endif // ALARMREQUEST_H

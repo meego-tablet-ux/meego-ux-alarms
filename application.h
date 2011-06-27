@@ -61,7 +61,7 @@ public:
 signals:
     void orientationChanged();
     void foregroundWindowChanged();    
-    void newAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type);
+    void newAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type, QString uid);
 
 public slots:
     void cleanupDialog(bool loadNextRequest = true);
@@ -80,7 +80,7 @@ private slots:
     void audioLostHandler();
     void audioReleasedHandler();
     void audioDeniedHandler();
-    void handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type);
+    void handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type, QString uid);
 
 private:
     void showCurrentRequest();

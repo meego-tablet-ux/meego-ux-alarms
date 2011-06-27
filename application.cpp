@@ -85,8 +85,8 @@ Application::Application(int & argc, char ** argv) :
 
     g_signal_connect (m_notifyItem, "alarm", G_CALLBACK (getAlarm_cb), this);
 
-    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QString, int)),
-             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QString, int) ));
+    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QString, int, QString)),
+             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QString, int, QString) ));
 
     connect (m_alarmResourceSet, SIGNAL (resourcesGranted(const QList<ResourcePolicy::ResourceType>&)), this,
              SLOT(audioAcquiredHandler()));
@@ -170,7 +170,7 @@ void Application::incomingCall(QString summary,
 
     m_currentRequest = new AlarmRequest(summary, body, acceptAction,
                                         rejectAction, imageURI, sound,
-                                        AlarmRequest::IncomingCall);
+                                        AlarmRequest::IncomingCall, e_cal_component_gen_uid());
     showCurrentRequest();
 
     // If any other types of notification are waiting in the queue,
@@ -295,10 +295,24 @@ void Application::cleanupDialog(bool loadNextRequest)
         enqueue(m_requestQueue.takeFirst());
 }
 
-void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type)
+void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type, QString uid)
 {    
-    AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type);
-    enqueue(incomingRequest);
+    bool eventNotInQueue = true;
+
+    if (m_currentRequest && (m_currentRequest->getUid() == uid))
+        eventNotInQueue = false;
+
+    for (int i=0; i < m_requestQueue.size(); i++)
+    {
+        if (m_requestQueue.at(i)->getUid() == uid)
+            eventNotInQueue = false;
+    }
+
+    if (eventNotInQueue)
+    {
+        AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, uid);
+        enqueue(incomingRequest);
+    }
 }
 
 //Callback function for getting alarm info from libealarm
@@ -311,17 +325,11 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     e_cal_component_commit_sequence(data);
 
     ECalComponentText summaryTxt;
-    ECalComponentDateTime timeDate;
-    GSList* attachList;
-    const gchar *attachment;
-    const gchar* locationTxt;
+
+    const gchar* eventUid;
+    e_cal_component_get_uid(data, &eventUid);
 
     e_cal_component_get_summary (data, &summaryTxt);
-
-    //e_cal_component_get_attachment_list(data, &attachList);
-    //g_slist_remove(attachList, attachment);
-
-    e_cal_component_get_dtstart (data, &timeDate);
 
     QString summary = summaryTxt.value;
     QString body = summaryTxt.value;
@@ -330,19 +338,7 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     QString imageUri;
     QString sound;
 
-    if (timeDate.value != NULL)
-    {
-        body += (QString("\n") + QString::number(timeDate.value->month) + QString("/") + QString::number(timeDate.value->day) + 
-	QString("\n") + QString::number(timeDate.value->hour) + QString(":") + QString::number(timeDate.value->minute));
-
-        e_cal_component_get_dtend (data, &timeDate);
-        body += (" - " + QString::number(timeDate.value->hour) + QString(":") + QString::number(timeDate.value->minute) + "\n");
-    }
-
-    e_cal_component_get_location(data, &locationTxt);
-    body += locationTxt;
-
-    appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type);
+    appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, eventUid);
 }
 
 void Application::enqueue(AlarmRequest *request)
