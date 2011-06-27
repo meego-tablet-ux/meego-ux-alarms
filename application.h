@@ -16,7 +16,7 @@
 #include <QOrientationSensor>
 #include <policy/resource-set.h>
 #include <glib.h>
-#include <libealarm/alarm-notify.h>
+#include <alarm-notify.h>
 
 #include <QtCore/QtCore>
 #include <QtCore/QObject>

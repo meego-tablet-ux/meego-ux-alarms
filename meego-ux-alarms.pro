@@ -7,10 +7,9 @@ PKGCONFIG += \
     gconf-2.0 \
     mlite \
     libresourceqt1 \
-    libealarm
-    
+    libealarm \
+    libecal-1.2
 
-#LIBS = -lealarm
 TARGET = meego-ux-alarms
 TEMPLATE = app
 SOURCES += main.cpp \
