@@ -148,8 +148,6 @@ void Application::incomingCall(QString summary,
                                QString sound,
                                QString imageURI)
 {
-    qDebug() << "XXX incomingCall" << m_dialog;
-
     if (m_currentRequest)
     {
         if (m_currentRequest->getType() == AlarmRequest::IncomingCall)
@@ -200,7 +198,6 @@ void Application::updateSecondaryRinger()
 
 void Application::dropCall()
 {
-    qDebug() << "XXX dropCall" << m_dialog;
     if (!m_currentRequest ||
         m_currentRequest->getType() != AlarmRequest::IncomingCall)
         return;
@@ -209,7 +206,6 @@ void Application::dropCall()
 
 void Application::mediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
-    qDebug() << "mediaStatuschanged" << status;
     if (status == QMediaPlayer::EndOfMedia)
     {
         QMediaPlayer *p = static_cast<QMediaPlayer *>(sender());
@@ -252,7 +248,6 @@ void Application::cancelAlarm()
 
 void Application::cleanupDialog(bool loadNextRequest)
 {
-    qDebug() << "XXX cleanupDialog" << m_dialog;
     if (m_dialog)
     {
         // For some reason, at least on 964 and 945 graphics, repeatedly
@@ -318,8 +313,6 @@ void Application::handleNewAlarmRequest(QString summary, QString body, QString a
 //Callback function for getting alarm info from libealarm
 void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Application* appInstance)
 {
-    qDebug() << "meego-ux-alarms has received an event / alarm";
-
     int type = e_cal_component_get_vtype (data);
 
     e_cal_component_commit_sequence(data);
@@ -396,8 +389,6 @@ void Application::showCurrentRequest()
 
 void Application::playSound()
 {
-    qDebug() << "meego-ux-alarm acquiring sound through sound policy...";
-
     if (m_hasAcquiredResources != true)
         m_alarmResourceSet->acquire();
     else
@@ -406,8 +397,6 @@ void Application::playSound()
 
 void Application::audioAcquiredHandler()
 {
-    qDebug() << "meego-ux-alarms audio has been acquired, playing alarm sound.";
-
     m_hasAcquiredResources = true;
 
     if (m_primaryPlayer && m_primaryPlayer->state() != QMediaPlayer::PlayingState)
@@ -421,7 +410,6 @@ void Application::audioLostHandler()
 {
     m_hasAcquiredResources = false;
 
-    qDebug() << "meego-ux-alarm audio has been lost, pausing sounds";
     if (m_primaryPlayer && m_primaryPlayer->state() == QMediaPlayer::PlayingState)
     {
         m_primaryPlayer->pause();
@@ -435,11 +423,9 @@ void Application::audioLostHandler()
 void Application::audioReleasedHandler()
 {
     m_hasAcquiredResources = false;
-    qDebug() <<"meego-ux-alarms audio has been successfully released";
 }
 
 void Application::audioDeniedHandler()
 {
     m_hasAcquiredResources = false;
-    qDebug() <<"meego-ux-alarms audio has been denied!";
 }

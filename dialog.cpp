@@ -73,13 +73,10 @@ Dialog::Dialog(QWidget * parent) : QDeclarativeView(parent)
 
     setSkipAnimation();
     inhibitScreenSaver();
-
-    qDebug() << "XXX Dialog::Dialog" << this;
 }
 
 Dialog::~Dialog()
 {
-    qDebug() << "XXX ~Dialog::Dialog" << this;
 }
 
 bool Dialog::event (QEvent * event)
