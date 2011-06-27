@@ -68,6 +68,7 @@ public slots:
     void dropCall();
     void triggerAction(QString action);
     void cancelAlarm();
+    void launchDesktopByName(QString name, QString cmd = QString(), QString cdata = QString());
 
 private slots:
     void updateOrientation();

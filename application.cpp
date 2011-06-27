@@ -8,6 +8,8 @@
 
 #include <QDebug>
 #include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusPendingCall>
 #include <QDeclarativeContext>
 #include <QDeclarativeEngine>
 #include <QFile>
@@ -428,4 +430,16 @@ void Application::audioReleasedHandler()
 void Application::audioDeniedHandler()
 {
     m_hasAcquiredResources = false;
+}
+
+void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
+{
+    QString service = "com.lockstatus";
+    QString object = "/query";
+    QString interface = "com.lockstatus.query";
+    QDBusInterface launcher(service, object, interface);
+    if (launcher.isValid())
+    {
+        launcher.asyncCall(QLatin1String("launchDesktopByName"), name, cmd, cdata);
+    }
 }
