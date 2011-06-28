@@ -10,6 +10,7 @@
 #define ALARMREQUEST_H
 
 #include <QObject>
+#include <QUrl>
 
 class AlarmRequest : public QObject
 {
@@ -19,7 +20,7 @@ class AlarmRequest : public QObject
     Q_PROPERTY(QString acceptAction READ getAcceptAction);
     Q_PROPERTY(QString rejectAction READ getRejectAction);
     Q_PROPERTY(QString imageUri READ getImageUri);
-    Q_PROPERTY(QString sound READ getSound);
+    Q_PROPERTY(QUrl sound READ getSound);
     Q_PROPERTY(int type READ getType);
     Q_PROPERTY(QString uid READ getUid);
 public:
@@ -28,7 +29,7 @@ public:
                           const QString acceptAction,
                           const QString rejectAction,
                           const QString imageUri,
-                          const QString sound,
+                          const QUrl sound,
                           int alarmType,
                           const QString uid,
                           QObject *parent = 0) :
@@ -61,7 +62,7 @@ public:
     QString getRejectAction() const {
         return m_rejectAction;
     }
-    QString getSound() const {
+    QUrl getSound() const {
         return m_sound;
     }
     QString getImageUri() const {
@@ -80,7 +81,7 @@ private:
     QString m_acceptAction;
     QString m_rejectAction;
     QString m_imageUri;
-    QString m_sound;
+    QUrl m_sound;
     int m_type;
     QString m_uid;
 };

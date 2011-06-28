@@ -87,8 +87,8 @@ Application::Application(int & argc, char ** argv) :
 
     g_signal_connect (m_notifyItem, "alarm", G_CALLBACK (getAlarm_cb), this);
 
-    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QString, int, QString)),
-             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QString, int, QString) ));
+    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString)),
+             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString) ));
 
     connect (m_alarmResourceSet, SIGNAL (resourcesGranted(const QList<ResourcePolicy::ResourceType>&)), this,
              SLOT(audioAcquiredHandler()));
@@ -169,7 +169,7 @@ void Application::incomingCall(QString summary,
     }
 
     m_currentRequest = new AlarmRequest(summary, body, acceptAction,
-                                        rejectAction, imageURI, sound,
+                                        rejectAction, imageURI, QUrl::fromLocalFile(sound),
                                         AlarmRequest::IncomingCall, e_cal_component_gen_uid());
     showCurrentRequest();
 
@@ -250,6 +250,7 @@ void Application::cancelAlarm()
 
 void Application::cleanupDialog(bool loadNextRequest)
 {
+
     if (m_dialog)
     {
         // For some reason, at least on 964 and 945 graphics, repeatedly
@@ -259,17 +260,6 @@ void Application::cleanupDialog(bool loadNextRequest)
         // dialog, and only delete this instance once we have a request
         // for a new dialog.
         m_dialog->close();
-    }
-
-    if (!m_currentRequest->getSound().isEmpty() || m_requestQueue.isEmpty())
-    {
-        m_soundsToPlay--;
-        //No more sounds to play, release the resource
-        if (m_soundsToPlay <= 0 || m_requestQueue.isEmpty())
-        {
-            m_alarmResourceSet->release();
-            m_soundsToPlay = 0;
-        }
     }
 
     if (m_primaryPlayer)
@@ -285,6 +275,17 @@ void Application::cleanupDialog(bool loadNextRequest)
         m_secondaryPlayer = NULL;
     }
 
+    if (m_currentRequest != NULL && (!m_currentRequest->getSound().isEmpty() || m_requestQueue.isEmpty()))
+    {
+        m_soundsToPlay--;
+        //No more sounds to play, release the resource
+        if (m_soundsToPlay <= 0 || m_requestQueue.isEmpty())
+        {
+            m_alarmResourceSet->release();
+            m_soundsToPlay = 0;
+        }
+    }
+
     delete m_currentRequest;
     m_currentRequest = NULL;
 
@@ -292,7 +293,7 @@ void Application::cleanupDialog(bool loadNextRequest)
         enqueue(m_requestQueue.takeFirst());
 }
 
-void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QString sound, int type, QString uid)
+void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid)
 {    
     bool eventNotInQueue = true;
 
@@ -315,15 +316,12 @@ void Application::handleNewAlarmRequest(QString summary, QString body, QString a
 //Callback function for getting alarm info from libealarm
 void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Application* appInstance)
 {
-    int type = e_cal_component_get_vtype (data);
-
-    e_cal_component_commit_sequence(data);
-
-    ECalComponentText summaryTxt;
+    //e_cal_component_commit_sequence(data);
 
     const gchar* eventUid;
     e_cal_component_get_uid(data, &eventUid);
 
+    ECalComponentText summaryTxt;
     e_cal_component_get_summary (data, &summaryTxt);
 
     QString summary = summaryTxt.value;
@@ -331,8 +329,28 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     QString acceptAction;
     QString rejectAction;
     QString imageUri;
-    QString sound;
+    QUrl sound;
 
+    int type = e_cal_component_get_vtype (data);
+
+    GList *alarmList = e_cal_component_get_alarm_uids(data);  
+
+    if (g_list_nth_data (alarmList, 0) != NULL)
+    {
+        const gchar* alarmItem = reinterpret_cast<const gchar*>(g_list_nth_data(alarmList,0));//(const gchar*)(g_list_nth_data(alarmList,0));
+
+        ECalComponentAlarm *alarm = e_cal_component_get_alarm(data, alarmItem);
+        icalattach *alarmAttachment;
+        e_cal_component_alarm_get_attach(alarm, &alarmAttachment);
+
+        if (icalattach_get_is_url(alarmAttachment))
+        {
+            sound = icalattach_get_url(alarmAttachment);
+            type = AlarmRequest::AlarmClock;
+        }
+    }
+
+    cal_obj_uid_list_free(alarmList);
     appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, eventUid);
 }
 
@@ -382,7 +400,7 @@ void Application::showCurrentRequest()
     {
         m_primaryPlayer = new QMediaPlayer(this, QMediaPlayer::LowLatency);
         connect(m_primaryPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
-        m_primaryPlayer->setMedia(QUrl::fromLocalFile(m_currentRequest->getSound()));
+        m_primaryPlayer->setMedia(m_currentRequest->getSound());
         playSound();
     }
 
