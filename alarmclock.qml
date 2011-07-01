@@ -5,7 +5,7 @@ Window {
     fullScreen: true
     overlayItem: ModalDialog {
         showCancelButton: true
-        showAcceptButton: true
+        showAcceptButton: currentRequest.snooze
 
         //: Title for the alarm clock alarm dialog box
         title: qsTr("Alarm")

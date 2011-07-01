@@ -15,8 +15,6 @@
 #include <QMediaPlayer>
 #include <QOrientationSensor>
 #include <policy/resource-set.h>
-#include <glib.h>
-#include <alarm-notify.h>
 
 #include <QtCore/QtCore>
 #include <QtCore/QObject>
@@ -61,7 +59,7 @@ public:
 signals:
     void orientationChanged();
     void foregroundWindowChanged();    
-    void newAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid);
+    void newAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid, bool, ECalComponent *);
 
 public slots:
     void cleanupDialog(bool loadNextRequest = true);
@@ -81,7 +79,7 @@ private slots:
     void audioLostHandler();
     void audioReleasedHandler();
     void audioDeniedHandler();
-    void handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid);
+    void handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid, bool, ECalComponent * data);
 
 private:
     void showCurrentRequest();

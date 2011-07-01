@@ -9,6 +9,8 @@
 #ifndef ALARMREQUEST_H
 #define ALARMREQUEST_H
 
+#include <glib.h>
+#include <alarm-notify.h>
 #include <QObject>
 #include <QUrl>
 
@@ -22,6 +24,7 @@ class AlarmRequest : public QObject
     Q_PROPERTY(QString imageUri READ getImageUri);
     Q_PROPERTY(QUrl sound READ getSound);
     Q_PROPERTY(int type READ getType);
+    Q_PROPERTY(bool snooze READ getSnooze);
     Q_PROPERTY(QString uid READ getUid);
 public:
     explicit AlarmRequest(const QString summary,
@@ -32,6 +35,8 @@ public:
                           const QUrl sound,
                           int alarmType,
                           const QString uid,
+                          bool snooze,
+                          ECalComponent *data = NULL,
                           QObject *parent = 0) :
         QObject(parent),
         m_summary(summary),
@@ -41,7 +46,9 @@ public:
         m_imageUri(imageUri),
         m_sound(sound),
         m_type(alarmType),
-        m_uid(uid) {}
+        m_uid(uid),
+        m_snooze(snooze),
+        m_data(data){}
 
     enum AlarmType {
         AlarmClock = 0,
@@ -74,6 +81,12 @@ public:
     QString getUid() const {
         return m_uid;
     }
+    ECalComponent* getData() const {
+        return m_data;
+    }
+    bool getSnooze() const {
+        return m_snooze;
+    }
 
 private:
     QString m_summary;
@@ -82,8 +95,10 @@ private:
     QString m_rejectAction;
     QString m_imageUri;
     QUrl m_sound;
-    int m_type;
+    int m_type;    
     QString m_uid;
+    bool m_snooze;
+    ECalComponent *m_data;
 };
 
 #endif // ALARMREQUEST_H

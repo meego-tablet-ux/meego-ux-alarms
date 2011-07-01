@@ -87,8 +87,8 @@ Application::Application(int & argc, char ** argv) :
 
     g_signal_connect (m_notifyItem, "alarm", G_CALLBACK (getAlarm_cb), this);
 
-    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString)),
-             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString) ));
+    connect (this, SIGNAL (newAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString, bool, ECalComponent *)),
+             this, SLOT (handleNewAlarmRequest(QString, QString, QString, QString, QString, QUrl, int, QString, bool, ECalComponent *) ));
 
     connect (m_alarmResourceSet, SIGNAL (resourcesGranted(const QList<ResourcePolicy::ResourceType>&)), this,
              SLOT(audioAcquiredHandler()));
@@ -170,7 +170,7 @@ void Application::incomingCall(QString summary,
 
     m_currentRequest = new AlarmRequest(summary, body, acceptAction,
                                         rejectAction, imageURI, QUrl::fromLocalFile(sound),
-                                        AlarmRequest::IncomingCall, e_cal_component_gen_uid());
+                                        AlarmRequest::IncomingCall, e_cal_component_gen_uid(), false);
     showCurrentRequest();
 
     // If any other types of notification are waiting in the queue,
@@ -238,9 +238,10 @@ void Application::triggerAction(QString action)
 
 void Application::cancelAlarm()
 {
-    if (!m_currentRequest ||
-            m_currentRequest->getType() != AlarmRequest::AlarmClock)
+    if (!m_currentRequest || m_currentRequest->getData() == NULL)
         return;
+
+    e_cal_component_remove_all_alarms(m_currentRequest->getData());
 
     // TODO: Use data from m_currentRequest to make a request
     //       via libealarm to cancel/stop the alarm
@@ -293,30 +294,34 @@ void Application::cleanupDialog(bool loadNextRequest)
         enqueue(m_requestQueue.takeFirst());
 }
 
-void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid)
-{    
+void Application::handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid, bool snooze, ECalComponent *data)
+{        
     bool eventNotInQueue = true;
+    GList *alarmList = e_cal_component_get_alarm_uids(data);
 
-    if (m_currentRequest && (m_currentRequest->getUid() == uid))
-        eventNotInQueue = false;
-
-    for (int i=0; i < m_requestQueue.size(); i++)
+    if (g_list_nth_data (alarmList, 0) != NULL)
     {
-        if (m_requestQueue.at(i)->getUid() == uid)
+        if (m_currentRequest && (m_currentRequest->getUid() == uid))
             eventNotInQueue = false;
-    }
 
-    if (eventNotInQueue)
-    {
-        AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, uid);
-        enqueue(incomingRequest);
+        for (int i=0; i < m_requestQueue.size(); i++)
+        {
+            if (m_requestQueue.at(i)->getUid() == uid)
+                eventNotInQueue = false;
+        }
+
+        if (eventNotInQueue)
+        {
+            AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, uid, snooze, data);
+            enqueue(incomingRequest);
+        }
     }
 }
 
 //Callback function for getting alarm info from libealarm
 void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Application* appInstance)
 {
-    //e_cal_component_commit_sequence(data);
+    ECalComponentAlarmRepeat alarmRepeat;
 
     const gchar* eventUid;
     e_cal_component_get_uid(data, &eventUid);
@@ -330,6 +335,7 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     QString rejectAction;
     QString imageUri;
     QUrl sound;
+    bool snooze = false;
 
     int type = e_cal_component_get_vtype (data);
 
@@ -337,9 +343,14 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
 
     if (g_list_nth_data (alarmList, 0) != NULL)
     {
-        const gchar* alarmItem = reinterpret_cast<const gchar*>(g_list_nth_data(alarmList,0));//(const gchar*)(g_list_nth_data(alarmList,0));
+        const gchar* alarmItem = reinterpret_cast<const gchar*>(g_list_nth_data(alarmList,0));
 
         ECalComponentAlarm *alarm = e_cal_component_get_alarm(data, alarmItem);
+        e_cal_component_alarm_get_repeat(alarm, &alarmRepeat);
+
+        if (alarmRepeat.duration.weeks > 0 || alarmRepeat.duration.days >0 || alarmRepeat.duration.hours > 0 || alarmRepeat.duration.minutes > 0)
+            snooze = true;
+
         icalattach *alarmAttachment;
         e_cal_component_alarm_get_attach(alarm, &alarmAttachment);
 
@@ -351,7 +362,7 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     }
 
     cal_obj_uid_list_free(alarmList);
-    appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, eventUid);
+    appInstance->newAlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, eventUid, snooze, data);
 }
 
 void Application::enqueue(AlarmRequest *request)

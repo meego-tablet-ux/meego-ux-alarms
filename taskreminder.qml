@@ -25,11 +25,11 @@ Window {
             text: currentRequest.body
         }
         onAccepted: {
-            qApp.triggerAction(currentRequest.acceptAction);
+            qApp.launchDesktopByName("/usr/share/applications/meego-app-tasks.desktop", "openTasks", currentRequest.uid);
             Qt.quit();
         }
-        onRejected: {
-            qApp.triggerAction(currentRequest.rejectAction);
+        onRejected: {            
+            qApp.cancelAlarm();
             Qt.quit();
         }
 

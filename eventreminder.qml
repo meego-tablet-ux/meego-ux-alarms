@@ -24,11 +24,13 @@ Window {
             wrapMode: Text.Wrap
             text: currentRequest.body
         }
-        onAccepted: {            
+        onAccepted: {
             qApp.launchDesktopByName("/usr/share/applications/meego-app-calendar.desktop", "openCalendar", currentRequest.uid);
+            qApp.cancelAlarm();
             Qt.quit();
         }
-        onRejected: {            
+        onRejected: {
+            qApp.cancelAlarm();
             Qt.quit();
         }
 
