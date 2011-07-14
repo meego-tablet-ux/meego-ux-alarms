@@ -22,6 +22,7 @@ Window {
             anchors.centerIn: parent
             width: parent.width - 20
             wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
             text: currentRequest.body
         }
         onAccepted: {
