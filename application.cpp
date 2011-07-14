@@ -442,16 +442,16 @@ void Application::showCurrentRequest()
     switch(m_currentRequest->getType())
     {
     case AlarmRequest::TaskReminder:
-        m_dialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-alarms/taskreminder.qml"));
+        m_dialog->setSource(QUrl::fromLocalFile(m_taskReminderPath));
         break;
     case AlarmRequest::EventReminder:
-        m_dialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-alarms/eventreminder.qml"));
+        m_dialog->setSource(QUrl::fromLocalFile(m_eventReminderPath));
         break;
     case AlarmRequest::AlarmClock:
-        m_dialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-alarms/alarmclock.qml"));
+        m_dialog->setSource(QUrl::fromLocalFile(m_alarmClockPath));
         break;
     case AlarmRequest::IncomingCall:
-        m_dialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-alarms/incomingcall.qml"));
+        m_dialog->setSource(QUrl::fromLocalFile(m_incomingCallPath));
         break;
     }
 
