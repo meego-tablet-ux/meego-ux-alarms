@@ -68,6 +68,18 @@ Application::Application(int & argc, char ** argv) :
     connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateIncomingCallPath()));
     updateIncomingCallPath();
 
+    m_alarmClockPathItem = new MGConfItem("/meego/ux/AlarmClockPath", this);
+    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateAlarmClockPath()));
+    updateAlarmClockPath();
+
+    m_taskReminderPathItem = new MGConfItem("/meego/ux/TaskReminderPath", this);
+    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateTaskReminderPath()));
+    updateTaskReminderPath();
+
+    m_eventReminderPathItem = new MGConfItem("/meego/ux/EventReminderPath", this);
+    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));
+    updateEventReminderPath();
+
     new AlarmControl(this);
     QDBusConnection::sessionBus().registerService("org.meego.alarms");
     QDBusConnection::sessionBus().registerObject("/incomingCall", this);
@@ -77,7 +89,7 @@ Application::Application(int & argc, char ** argv) :
 
     m_alarmAudioResource = new ResourcePolicy::AudioResource("alarm");
     m_alarmAudioResource->setProcessID(QCoreApplication::applicationPid());
-    m_alarmAudioResource->setStreamTag("media.name", "AlarmStream");
+    m_alarmAudioResource->setStreamTag("media.name", "*");
     
     m_alarmResourceSet->addResourceObject(m_alarmAudioResource);
 
@@ -224,6 +236,42 @@ void Application::updateIncomingCallPath()
     else
     {
         m_incomingCallPath = m_incomingCallPathItem->value().toString();
+    }
+}
+
+void Application::updateAlarmClockPath()
+{
+    if (!m_alarmClockPathItem->value().isValid())
+    {
+        m_alarmClockPath = "/usr/share/meego-ux-alarms/alarmclock.qml";
+    }
+    else
+    {
+        m_alarmClockPath = m_alarmClockPathItem->value().toString();
+    }
+}
+
+void Application::updateEventReminderPath()
+{
+    if (!m_eventReminderPathItem->value().isValid())
+    {
+        m_eventReminderPath = "/usr/share/meego-ux-alarms/eventreminder.qml";
+    }
+    else
+    {
+        m_eventReminderPath = m_taskReminderPathItem->value().toString();
+    }
+}
+
+void Application::updateTaskReminderPath()
+{
+    if (!m_taskReminderPathItem->value().isValid())
+    {
+        m_taskReminderPath = "/usr/share/meego-ux-alarms/taskreminder.qml";
+    }
+    else
+    {
+        m_taskReminderPath = m_taskReminderPathItem->value().toString();
     }
 }
 

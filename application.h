@@ -73,6 +73,11 @@ private slots:
     void playSound();
     void updateSecondaryRinger();
     void updateIncomingCallPath();
+    void updateAlarmClockPath();
+    void updateEventReminderPath();
+    void updateTaskReminderPath();
+
+
     void mediaStatusChanged(QMediaPlayer::MediaStatus);
     void enqueue(AlarmRequest *);
     void audioAcquiredHandler();
@@ -96,6 +101,15 @@ private:
 
     QString m_incomingCallPath;
     MGConfItem *m_incomingCallPathItem;
+
+    QString m_alarmClockPath;
+    MGConfItem *m_alarmClockPathItem;
+
+    QString m_taskReminderPath;
+    MGConfItem *m_taskReminderPathItem;
+
+    QString m_eventReminderPath;
+    MGConfItem *m_eventReminderPathItem;
 
     Dialog *m_dialog;
 
