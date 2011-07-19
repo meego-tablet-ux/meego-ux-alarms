@@ -398,6 +398,10 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
         const gchar* alarmItem = reinterpret_cast<const gchar*>(g_list_nth_data(alarmList,0));
 
         ECalComponentAlarm *alarm = e_cal_component_get_alarm(data, alarmItem);
+        ECalComponentAlarmAction alarmAction;
+
+        e_cal_component_alarm_get_action(alarm, &alarmAction);
+
         e_cal_component_alarm_get_repeat(alarm, &alarmRepeat);
 
         if (alarmRepeat.duration.weeks > 0 || alarmRepeat.duration.days >0 || alarmRepeat.duration.hours > 0 || alarmRepeat.duration.minutes > 0)
@@ -406,9 +410,20 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
         icalattach *alarmAttachment;
         e_cal_component_alarm_get_attach(alarm, &alarmAttachment);
 
-        if (icalattach_get_is_url(alarmAttachment))
+        //if (icalattach_get_is_url(alarmAttachment))
+        if (alarmAction == E_CAL_COMPONENT_ALARM_AUDIO)
         {
             sound = icalattach_get_url(alarmAttachment);
+
+            //If sound file not found use default
+            if (!sound.isValid())
+            {
+                qDebug()<<"BJONES SOUND NOT VALID USING DEFAULT";
+                sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/alert-1.wav");
+            }
+	    sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/ring-1.wav");
+ 	    qDebug()<<"BJONES sound url = "<<sound.toString();
+
             type = AlarmRequest::AlarmClock;
         }
     }
