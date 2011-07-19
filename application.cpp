@@ -69,15 +69,19 @@ Application::Application(int & argc, char ** argv) :
     updateIncomingCallPath();
 
     m_alarmClockPathItem = new MGConfItem("/meego/ux/AlarmClockPath", this);
-    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateAlarmClockPath()));
+    connect(m_alarmClockPathItem, SIGNAL(valueChanged()), SLOT(updateAlarmClockPath()));
     updateAlarmClockPath();
 
     m_taskReminderPathItem = new MGConfItem("/meego/ux/TaskReminderPath", this);
-    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateTaskReminderPath()));
+    m_taskReminderSoundPathItem = new MGConfItem("/meego/ux/TaskReminderSoundPath", this);
+    connect(m_taskReminderPathItem, SIGNAL(valueChanged()), SLOT(updateTaskReminderPath()));
+    connect(m_taskReminderSoundPathItem, SIGNAL(valueChanged()), SLOT(updateTaskReminderPath()));
     updateTaskReminderPath();
 
     m_eventReminderPathItem = new MGConfItem("/meego/ux/EventReminderPath", this);
-    connect(m_incomingCallPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));
+    m_eventReminderSoundPathItem = new MGConfItem("/meego/ux/EventReminderPath", this);
+    connect(m_eventReminderPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));    
+    connect(m_eventReminderSoundPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));
     updateEventReminderPath();
 
     new AlarmControl(this);
@@ -259,7 +263,7 @@ void Application::updateEventReminderPath()
     }
     else
     {
-        m_eventReminderPath = m_taskReminderPathItem->value().toString();
+        m_eventReminderPath = m_eventReminderPathItem->value().toString();
     }
 }
 

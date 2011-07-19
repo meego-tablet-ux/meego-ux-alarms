@@ -107,9 +107,13 @@ private:
 
     QString m_taskReminderPath;
     MGConfItem *m_taskReminderPathItem;
+    QString m_taskReminderSoundPath;
+    MGConfItem *m_taskReminderSoundPathItem;
 
     QString m_eventReminderPath;
     MGConfItem *m_eventReminderPathItem;
+    QString m_eventReminderSoundPath;
+    MGConfItem *m_eventReminderSoundPathItem;
 
     Dialog *m_dialog;
 
