@@ -79,7 +79,7 @@ Application::Application(int & argc, char ** argv) :
     updateTaskReminderPath();
 
     m_eventReminderPathItem = new MGConfItem("/meego/ux/EventReminderPath", this);
-    m_eventReminderSoundPathItem = new MGConfItem("/meego/ux/EventReminderPath", this);
+    m_eventReminderSoundPathItem = new MGConfItem("/meego/ux/EventReminderSoundPath", this);
     connect(m_eventReminderPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));    
     connect(m_eventReminderSoundPathItem, SIGNAL(valueChanged()), SLOT(updateEventReminderPath()));
     updateEventReminderPath();
@@ -265,6 +265,16 @@ void Application::updateEventReminderPath()
     {
         m_eventReminderPath = m_eventReminderPathItem->value().toString();
     }
+
+    if (!m_eventReminderSoundPathItem->value().isValid())
+    {
+        m_eventReminderSoundPath = "/usr/share/sounds/meego/stereo/alert-1.wav";
+    }
+    else
+    {
+        m_eventReminderSoundPath = m_eventReminderSoundPathItem->value().toString();
+    }
+
 }
 
 void Application::updateTaskReminderPath()
@@ -276,6 +286,15 @@ void Application::updateTaskReminderPath()
     else
     {
         m_taskReminderPath = m_taskReminderPathItem->value().toString();
+    }
+
+    if (!m_taskReminderSoundPathItem->value().isValid())
+    {
+        m_taskReminderSoundPath = "/usr/share/sounds/meego/stereo/alert-1.wav";
+    }
+    else
+    {
+        m_taskReminderSoundPath = m_taskReminderSoundPathItem->value().toString();
     }
 }
 
@@ -364,6 +383,12 @@ void Application::handleNewAlarmRequest(QString summary, QString body, QString a
 
         if (eventNotInQueue)
         {
+            //Tasks and Events don't let the user pick the sound, assign the default
+            if (type == AlarmRequest::EventReminder)
+                sound = QUrl::fromLocalFile(m_eventReminderSoundPath);
+            else if (type == AlarmRequest::TaskReminder)
+                sound = QUrl::fromLocalFile(m_taskReminderSoundPath);
+
             AlarmRequest *incomingRequest = new AlarmRequest(summary, body, acceptAction, rejectAction, imageUri, sound, type, uid, snooze, data);
             enqueue(incomingRequest);
         }
@@ -410,7 +435,6 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
         icalattach *alarmAttachment;
         e_cal_component_alarm_get_attach(alarm, &alarmAttachment);
 
-        //if (icalattach_get_is_url(alarmAttachment))
         if (alarmAction == E_CAL_COMPONENT_ALARM_AUDIO)
         {
             sound = icalattach_get_url(alarmAttachment);
@@ -418,11 +442,8 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
             //If sound file not found use default
             if (!sound.isValid())
             {
-                qDebug()<<"BJONES SOUND NOT VALID USING DEFAULT";
                 sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/alert-1.wav");
             }
-	    sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/ring-1.wav");
- 	    qDebug()<<"BJONES sound url = "<<sound.toString();
 
             type = AlarmRequest::AlarmClock;
         }
