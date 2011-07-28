@@ -406,8 +406,8 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
     ECalComponentText summaryTxt;
     e_cal_component_get_summary (data, &summaryTxt);
 
-    QString summary = summaryTxt.value;
-    QString body = summaryTxt.value;
+    QString summary = QString::fromUtf8(summaryTxt.value);
+    QString body = QString::fromUtf8(summaryTxt.value);
     QString acceptAction;
     QString rejectAction;
     QString imageUri;
