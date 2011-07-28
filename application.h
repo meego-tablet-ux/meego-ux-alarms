@@ -18,6 +18,7 @@
 
 #include <QtCore/QtCore>
 #include <QtCore/QObject>
+#include <meegolocale.h>
 
 #include "alarmrequest.h"
 
@@ -67,6 +68,9 @@ public slots:
     void triggerAction(QString action);
     void cancelAlarm();
     void launchDesktopByName(QString name, QString cmd = QString(), QString cdata = QString());
+    void loadTranslators() {
+	m_translator.load("meego-ux-alarms_" + locale->locale() + ".qm", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+}
 
 private slots:
     void updateOrientation();
@@ -87,6 +91,7 @@ private slots:
     void handleNewAlarmRequest(QString summary, QString body, QString acceptAction, QString rejectAction, QString imageUri, QUrl sound, int type, QString uid, bool, ECalComponent * data);
 
 private:
+    meego::Locale* locale;
     void showCurrentRequest();
 
     int m_orientation;

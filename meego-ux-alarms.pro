@@ -8,7 +8,8 @@ PKGCONFIG += \
     mlite \
     libresourceqt1 \
     libealarm \
-    libecal-1.2
+    libecal-1.2 \
+    meegolocale
 
 TARGET = meego-ux-alarms
 TEMPLATE = app

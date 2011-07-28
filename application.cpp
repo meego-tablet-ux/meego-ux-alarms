@@ -26,6 +26,7 @@
 
 Application::Application(int & argc, char ** argv) :
     QApplication(argc, argv),
+    locale(new meego::Locale(this)),
     m_orientation(1),
     m_orientationSensorAvailable(false),
     m_dialog(NULL),
@@ -46,6 +47,8 @@ Application::Application(int & argc, char ** argv) :
         connect(&m_orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
     }
 
+    connect(locale, SIGNAL(localeChanged()), this, SLOT(loadTranslators()));
+
     QString theme = MGConfItem("/meego/ux/theme").value().toString();
     QString themeFile = QString("/usr/share/themes/") + theme + "/theme.ini";
     if(!QFile::exists(themeFile))
@@ -57,7 +60,7 @@ Application::Application(int & argc, char ** argv) :
 
     setFont(QFont(themeConfig->value("fontFamily").toString(), themeConfig->value("fontPixelSizeMedium").toInt()));
 
-    m_translator.load("qt_meego-ux-alarms.qm", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    m_translator.load("meego-ux-alarms_" + locale->locale() + ".qm", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     installTranslator(&m_translator);
 
     m_secondaryRingerItem = new MGConfItem("/meego/chat/short-videocall-sound", this);
@@ -268,7 +271,7 @@ void Application::updateEventReminderPath()
 
     if (!m_eventReminderSoundPathItem->value().isValid())
     {
-        m_eventReminderSoundPath = "/usr/share/sounds/meego/stereo/alert-1.wav";
+        m_eventReminderSoundPath = "/usr/share/sounds/meego/stereo/ring-1.wav";
     }
     else
     {
@@ -290,7 +293,7 @@ void Application::updateTaskReminderPath()
 
     if (!m_taskReminderSoundPathItem->value().isValid())
     {
-        m_taskReminderSoundPath = "/usr/share/sounds/meego/stereo/alert-1.wav";
+        m_taskReminderSoundPath = "/usr/share/sounds/meego/stereo/ring-1.wav";
     }
     else
     {
@@ -442,7 +445,7 @@ void Application::getAlarm_cb(AlarmNotify *notify, ECalComponent *data, Applicat
             //If sound file not found use default
             if (!sound.isValid())
             {
-                sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/alert-1.wav");
+                sound = QUrl::fromLocalFile("/usr/share/sounds/meego/stereo/ring-1.wav");
             }
 
             type = AlarmRequest::AlarmClock;
